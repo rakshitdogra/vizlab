@@ -23,8 +23,6 @@ VizLab is a no server, no build step, no dependencies, no account and no upload.
 4. Choose a chart type, an X / row field and one or more series.
 5. Adjust the title, theme and legend, then click **Export PNG** or **Export SVG**.
 
-To host it (for example on GitHub Pages), rename the file to `index.html`.
-
 ## Data format
 
 **CSV**: the first row is the header.
