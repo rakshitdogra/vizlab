@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VizLab</title>
+<meta name="description" content="Turn research data into clean, publication-ready visualizations.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2228%22%20height%3D%2228%22%20viewBox%3D%220%200%2028%2028%22%20fill%3D%22none%22%3E%0A%3Crect%20width%3D%2228%22%20height%3D%2228%22%20rx%3D%228%22%20fill%3D%22%23172A3A%22/%3E%0A%3Crect%20x%3D%227%22%20y%3D%2211%22%20width%3D%224%22%20height%3D%2210%22%20rx%3D%222%22%20fill%3D%22%23E9C46A%22/%3E%0A%3Crect%20x%3D%2213%22%20y%3D%226%22%20width%3D%224%22%20height%3D%2215%22%20rx%3D%222%22%20fill%3D%22%232A9D8F%22/%3E%0A%3Crect%20x%3D%2219%22%20y%3D%229%22%20width%3D%224%22%20height%3D%2212%22%20rx%3D%222%22%20fill%3D%22%23E76F51%22/%3E%0A%3C/svg%3E">
+<meta name="theme-color" content="#172A3A">
+<style>
+:root{--ink:#172a3a;--teal:#2a9d8f;--coral:#e76f51;--gold:#e9c46a;--blue:#457b9d;--paper:#f7f7f3;--muted:#68737d;--line:#dfe4df}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{text-decoration:none;color:inherit}.nav{height:74px;max-width:1240px;margin:auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+.vizlab-brand{display:inline-flex;align-items:center;gap:10px;color:#172A3A;text-decoration:none;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:20px;font-weight:850;letter-spacing:-.04em}.vizlab-brand svg{flex:0 0 28px}.vizlab-heading{color:#172A3A;text-decoration:none;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:20px;font-weight:850;letter-spacing:-.04em}
+.navlinks{display:flex;gap:28px;color:var(--muted);font-size:13px}.navlinks a:hover{color:var(--ink)}
+.btn{padding:11px 16px;border-radius:10px;border:1px solid var(--ink);font-size:13px;font-weight:750;background:var(--ink);color:#fff}
+.hero{max-width:1240px;margin:auto;padding:82px 24px 72px;display:grid;grid-template-columns:.95fr 1.05fr;gap:70px;align-items:center}
+.kicker{text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:850;color:var(--teal)}
+h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:-.055em}
+h1{font-size:clamp(54px,6.6vw,88px);line-height:.93;margin:18px 0 25px}h1 em{font-style:normal;color:var(--coral)}
+.lead{max-width:600px;color:var(--muted);font-size:18px;line-height:1.65}.actions{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap}.ghost{background:#fff;color:var(--ink)}
+.micro{margin-top:17px;color:#7d878d;font-size:11px;display:flex;gap:18px;flex-wrap:wrap}
+.demo{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 25px 75px rgba(23,42,58,.13);padding:15px;transform:rotate(1deg)}
+.demohead{height:35px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.dots{display:flex;gap:5px}.dots i{width:7px;height:7px;border-radius:50%;background:#d7dcda}.smallcap{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.demo-body{padding:25px}.demo-title{font:24px Georgia,serif}.demo-sub{font-size:10px;color:var(--muted);margin:5px 0 20px}.chart{height:285px;border-left:1px solid var(--ink);border-bottom:1px solid var(--ink);position:relative}.grid{position:absolute;left:0;right:0;border-top:1px dashed #e3e7e4}.g1{top:25%}.g2{top:50%}.g3{top:75%}.chart svg{width:100%;height:100%}.legend{display:flex;justify-content:center;gap:16px;margin-top:13px;font-size:9px;color:var(--muted)}.legend span{display:flex;align-items:center;gap:5px}.legend i{width:7px;height:7px;border-radius:50%}
+.section{max-width:1240px;margin:auto;padding:95px 24px}.sectionhead{display:flex;justify-content:space-between;align-items:end;gap:40px;margin-bottom:42px}h2{font-size:48px;line-height:1;margin:8px 0}.intro{max-width:410px;color:var(--muted);font-size:14px;line-height:1.65}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:#fff;border:1px solid var(--line);border-radius:17px;padding:26px;min-height:200px}.num{font:14px Georgia,serif;color:var(--coral)}.card h3{font-size:17px;margin:30px 0 9px}.card p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.dark{background:var(--ink);color:#fff}.dark-inner{max-width:1240px;margin:auto;padding:100px 24px}.dark .kicker{color:var(--gold)}.dark h2{max-width:680px}.flow{display:grid;grid-template-columns:repeat(3,1fr);margin-top:52px;border-top:1px solid #ffffff2b;border-bottom:1px solid #ffffff2b}.flow article{padding:30px 24px 30px 0;border-right:1px solid #ffffff2b}.flow article:not(:first-child){padding-left:24px}.flow article:last-child{border:0}.flow b{font:28px Georgia,serif;color:var(--gold)}.flow h3{font-size:16px;margin:16px 0 8px}.flow p{color:#b8c2c7;font-size:12px;line-height:1.6;margin:0}
+.examples{display:grid;grid-template-columns:1fr 1fr;gap:14px}.example{background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden}.examplevisual{height:185px;background:#fbfbf8;border-bottom:1px solid var(--line);padding:22px}.bars{height:100%;display:flex;align-items:end;gap:10px}.bars i{flex:1;border-radius:4px 4px 0 0;background:var(--teal)}.bars i:nth-child(2){background:var(--coral)}.bars i:nth-child(3){background:var(--gold)}.bars i:nth-child(4){background:var(--blue)}.bars i:nth-child(5){background:var(--teal)}.examplecopy{padding:23px}.examplecopy h3{margin:0 0 7px;font-size:16px}.examplecopy p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+.footer{border-top:1px solid var(--line);max-width:1240px;margin:auto;padding:28px 24px;display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+@media(max-width:900px){.navlinks{display:none}.hero{grid-template-columns:1fr}.demo{transform:none}.cards{grid-template-columns:1fr}.sectionhead{display:block}.intro{margin-top:18px}.flow{grid-template-columns:1fr}.flow article{border-right:0;border-bottom:1px solid #ffffff2b;padding:25px 0!important}.examples{grid-template-columns:1fr}}
+@media(max-width:560px){h1{font-size:54px}h2{font-size:38px}.nav{padding:0 18px}.hero,.section{padding-left:18px;padding-right:18px}.micro{display:block}.micro span{display:inline-block;margin-right:12px;margin-bottom:5px}}
+
+/* ---------- Premium micro-interactions ---------- */
+html{scroll-padding-top:90px}
+body{overflow-x:hidden}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:radial-gradient(520px circle at var(--mx,50%) var(--my,20%),rgba(42,157,143,.055),transparent 65%);
+  opacity:.9;transition:opacity .3s ease;
+}
+.nav{position:sticky;top:0;z-index:100;background:rgba(247,247,243,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:box-shadow .25s ease,background .25s ease}
+.nav.scrolled{box-shadow:0 1px 0 rgba(23,42,58,.08);background:rgba(247,247,243,.9)}
+.vizlab-brand svg{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.vizlab-brand:hover svg{transform:rotate(-4deg) scale(1.06)}
+.btn{position:relative;overflow:hidden;transition:transform .22s ease,box-shadow .22s ease,background .22s ease}
+.btn::after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.22);transform:scale(0);opacity:0;pointer-events:none}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(23,42,58,.13)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn.ripple::after{animation:ripple .55s ease-out}
+@keyframes ripple{0%{transform:scale(0);opacity:.5}100%{transform:scale(15);opacity:0}}
+.hero > div:first-child{animation:heroIn .8s cubic-bezier(.2,.75,.2,1) both}
+.demo{animation:demoIn .9s .08s cubic-bezier(.2,.75,.2,1) both;transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease}
+.demo:hover{transform:perspective(1000px) rotateX(1deg) rotateY(-1.5deg) translateY(-5px);box-shadow:0 32px 90px rgba(23,42,58,.17)}
+@keyframes heroIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes demoIn{from{opacity:0;transform:translateY(24px) rotate(1deg) scale(.985)}to{opacity:1;transform:translateY(0) rotate(1deg) scale(1)}}
+.card{transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease,border-color .28s ease}
+.card:hover{transform:translateY(-7px);box-shadow:0 18px 42px rgba(23,42,58,.09);border-color:#cbd4cf}
+.card .num{transition:transform .25s ease;color:var(--coral)}
+.card:hover .num{transform:translateX(4px)}
+.flow article{transition:background .3s ease}
+.flow article:hover{background:rgba(255,255,255,.035)}
+.example{transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}
+.example:hover{transform:translateY(-6px);box-shadow:0 18px 42px rgba(23,42,58,.09);border-color:#cbd4cf}
+.examplevisual{overflow:hidden}
+.examplevisual svg,.bars{transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.example:hover .examplevisual svg,.example:hover .bars{transform:scale(1.035)}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.75,.2,1)}
+.reveal.visible{opacity:1;transform:none}
+.stagger-1{transition-delay:.04s}.stagger-2{transition-delay:.1s}.stagger-3{transition-delay:.16s}
+.chart svg polyline{stroke-dasharray:1000;stroke-dashoffset:1000;animation:drawLine 1.7s .45s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes drawLine{to{stroke-dashoffset:0}}
+.chart svg polyline{transition:opacity .25s ease,stroke-width .25s ease}
+.chart:hover polyline{opacity:.2}
+.chart:hover polyline:hover{opacity:1;stroke-width:5}
+.hero .micro span{transition:color .2s ease,transform .2s ease}
+.hero .micro span:hover{color:var(--ink);transform:translateY(-2px)}
+.section .kicker{transition:letter-spacing .3s ease}
+.section:hover .kicker{letter-spacing:.2em}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+
+
+.viz-tooltip{position:fixed;z-index:10000;pointer-events:none;opacity:0;transform:translateY(4px);padding:7px 9px;border-radius:8px;background:#172a3a;color:#fff;font:600 11px Inter,system-ui,sans-serif;box-shadow:0 10px 24px rgba(23,42,58,.18);transition:opacity .16s ease,transform .16s ease}
+.viz-tooltip[aria-hidden="false"]{opacity:1;transform:none}
+.navlinks a{position:relative}.navlinks a::after{content:"";position:absolute;left:0;right:100%;bottom:-7px;height:1px;background:var(--teal);transition:right .25s ease}.navlinks a:hover::after,.navlinks a.active::after{right:0}
+
+</style>
+</head>
+<body>
+<nav class="nav">
+<a class="vizlab-brand" href="#" aria-label="VizLab home">
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="28" height="28" rx="8" fill="#172A3A"/>
+    <rect x="7" y="11" width="4" height="10" rx="2" fill="#E9C46A"/>
+    <rect x="13" y="6" width="4" height="15" rx="2" fill="#2A9D8F"/>
+    <rect x="19" y="9" width="4" height="12" rx="2" fill="#E76F51"/>
+  </svg>
+  <span>VizLab</span>
+</a>
+<div class="navlinks"><a href="#features">Features</a><a href="#workflow">Workflow</a><a href="#examples">Examples</a></div>
+<a class="btn" href="vizlab.html">Open VizLab →</a>
+</nav>
+
+<section class="hero">
+<div>
+<div class="kicker">Research visualization maker</div>
+<h1>Good data deserves <em>beautiful figures.</em></h1>
+<p class="lead">VizLab turns raw research data into clean, restrained, publication-ready visualizations - without making you fight with chart software.</p>
+<div class="actions"><a class="btn" href="vizlab.html">Start visualizing →</a><a class="btn ghost" href="#features">Explore features</a></div>
+<div class="micro"><span>CSV & JSON</span><span>Client-side</span><span>SVG + PNG</span><span>No account</span></div>
+</div>
+
+<div class="demo">
+<div class="demohead"><div class="dots"><i></i><i></i><i></i></div><span class="smallcap">Figure preview / 01</span></div>
+<div class="demo-body">
+<div class="demo-title">PR-AUC across horizons</div><div class="demo-sub">Comparison of forecasting configurations across five horizons</div>
+<div class="chart"><div class="grid g1"></div><div class="grid g2"></div><div class="grid g3"></div>
+<svg viewBox="0 0 600 285">
+<polyline points="0,245 150,172 300,112 450,70 600,28" fill="none" stroke="#172a3a" stroke-width="4"/>
+<polyline points="0,232 150,153 300,98 450,53 600,17" fill="none" stroke="#2a9d8f" stroke-width="4"/>
+<polyline points="0,220 150,145 300,90 450,48 600,8" fill="none" stroke="#e76f51" stroke-width="4"/>
+<polyline points="0,265 150,187 300,120 450,61 600,13" fill="none" stroke="#e9c46a" stroke-width="4"/>
+<g class="chart-points">
+  <circle cx="150" cy="172" r="5" fill="#fff" stroke="#172a3a" stroke-width="3" data-value="0.1587"/>
+  <circle cx="300" cy="112" r="5" fill="#fff" stroke="#172a3a" stroke-width="3" data-value="0.2080"/>
+  <circle cx="450" cy="70" r="5" fill="#fff" stroke="#172a3a" stroke-width="3" data-value="0.2433"/>
+  <circle cx="600" cy="28" r="5" fill="#fff" stroke="#172a3a" stroke-width="3" data-value="0.2826"/>
+</g>
+</svg></div>
+<div class="legend"><span><i style="background:#172a3a"></i>History</span><span><i style="background:#2a9d8f"></i>Activity</span><span><i style="background:#e76f51"></i>Dependency</span><span><i style="background:#e9c46a"></i>Full</span></div>
+</div></div>
+</section>
+
+<section class="section" id="features">
+<div class="sectionhead"><div><div class="kicker">Built for researchers</div><h2>From numbers<br>to evidence.</h2></div><p class="intro">Designed around the way research figures actually work: precise values, clear comparisons, restrained styling and control over the final composition.</p></div>
+<div class="cards">
+<article class="card"><div class="num">01</div><h3>Paste data. Start immediately.</h3><p>Drop in CSV or JSON. VizLab detects fields and gives you chart-specific controls instead of making you configure a plotting library.</p></article>
+<article class="card"><div class="num">02</div><h3>Choose the visual logic.</h3><p>Trends, comparisons, composition, relationships and matrices each get their own visualization pattern.</p></article>
+<article class="card"><div class="num">03</div><h3>Make dense figures readable.</h3><p>Smart label placement, font controls, zoom, collision handling and movable legends help keep close values legible.</p></article>
+<article class="card"><div class="num">04</div><h3>Style without the noise.</h3><p>Editorial palettes, academic serif typography, clean grids and restrained visual hierarchy are ready from the start.</p></article>
+<article class="card"><div class="num">05</div><h3>Export the figure.</h3><p>Generate SVG for crisp publication workflows or high-resolution PNG for slides, documents and presentations.</p></article>
+<article class="card"><div class="num">06</div><h3>Keep your data local.</h3><p>The visualization maker is browser-based. Your data does not need to be sent to a visualization server.</p></article>
+</div>
+</section>
+
+<section class="dark" id="workflow"><div class="dark-inner">
+<div class="kicker">The workflow</div><h2>Less chart configuration.<br>More research thinking.</h2>
+<div class="flow">
+<article><b>01</b><h3>Input</h3><p>Paste CSV or JSON and let VizLab understand the structure of your dataset.</p></article>
+<article><b>02</b><h3>Compose</h3><p>Select the visualization, fields, labels, typography, palette and legend position.</p></article>
+<article><b>03</b><h3>Export</h3><p>Fine-tune the figure in real time, then export a clean SVG or high-resolution PNG.</p></article>
+</div>
+</div></section>
+
+<section class="section" id="examples">
+<div class="sectionhead"><div><div class="kicker">Visual vocabulary</div><h2>One dataset.<br>Many ways to see it.</h2></div><p class="intro">Use the visual form that matches the question your research is asking.</p></div>
+<div class="examples">
+<article class="example"><div class="examplevisual"><div class="bars"><i style="height:34%"></i><i style="height:57%"></i><i style="height:46%"></i><i style="height:77%"></i><i style="height:63%"></i></div></div><div class="examplecopy"><h3>Comparison</h3><p>Bar, grouped bar, stacked bar and lollipop charts make category differences immediately visible.</p></div></article>
+<article class="example"><div class="examplevisual"><svg viewBox="0 0 600 180" style="width:100%;height:100%"><polyline points="5,145 100,122 200,132 300,78 400,91 500,38 595,52" fill="none" stroke="#2a9d8f" stroke-width="5"/><polyline points="5,135 100,137 200,106 300,101 400,72 500,60 595,28" fill="none" stroke="#e76f51" stroke-width="5"/></svg></div><div class="examplecopy"><h3>Trend & trajectory</h3><p>Line and area charts reveal movement across ordered horizons, periods or experimental conditions.</p></div></article>
+</div>
+</section>
+
+<footer class="footer"><span>VizLab - Research Visualization Maker</span><span>&copy; Rakshit Dogra.</span></footer>
+<div class="viz-tooltip" id="vizTooltip" aria-hidden="true"></div>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const nav = document.querySelector(".nav");
+  const tooltip = document.getElementById("vizTooltip");
+
+  // Subtle cursor light - gives the page depth without becoming distracting.
+  window.addEventListener("pointermove", e => {
+    root.style.setProperty("--mx", e.clientX + "px");
+    root.style.setProperty("--my", e.clientY + "px");
+  }, {passive:true});
+
+  // Sticky nav state.
+  const updateNav = () => nav?.classList.toggle("scrolled", window.scrollY > 12);
+  updateNav();
+  window.addEventListener("scroll", updateNav, {passive:true});
+
+  // Scroll reveal.
+  const revealTargets = document.querySelectorAll(
+    ".sectionhead,.card,.flow article,.example,.dark-inner > h2,.dark-inner > .kicker"
+  );
+  revealTargets.forEach((el,i) => {
+    el.classList.add("reveal");
+    el.classList.add("stagger-" + ((i % 3) + 1));
+  });
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {threshold:.12, rootMargin:"0px 0px -35px"});
+    revealTargets.forEach(el => observer.observe(el));
+  } else {
+    revealTargets.forEach(el => el.classList.add("visible"));
+  }
+
+  // Gentle magnetic behavior for the primary CTA.
+  document.querySelectorAll(".btn").forEach(btn => {
+    btn.addEventListener("pointermove", e => {
+      const r = btn.getBoundingClientRect();
+      const dx = (e.clientX - (r.left+r.width/2)) / r.width * 5;
+      const dy = (e.clientY - (r.top+r.height/2)) / r.height * 5;
+      btn.style.transform = `translate(${dx}px,${dy}px)`;
+    });
+    btn.addEventListener("pointerleave", () => btn.style.transform = "");
+    btn.addEventListener("click", e => {
+      btn.classList.remove("ripple");
+      void btn.offsetWidth;
+      btn.classList.add("ripple");
+    });
+  });
+
+  // Interactive hero chart points.
+  document.querySelectorAll(".chart-points circle").forEach(point => {
+    point.style.cursor = "crosshair";
+    point.addEventListener("pointerenter", e => {
+      const value = point.dataset.value;
+      tooltip.textContent = "PR-AUC  " + value;
+      tooltip.setAttribute("aria-hidden","false");
+      point.setAttribute("r","7");
+    });
+    point.addEventListener("pointermove", e => {
+      tooltip.style.left = (e.clientX + 14) + "px";
+      tooltip.style.top = (e.clientY - 42) + "px";
+    });
+    point.addEventListener("pointerleave", () => {
+      tooltip.setAttribute("aria-hidden","true");
+      point.setAttribute("r","5");
+    });
+  });
+
+  // Active section in the navigation.
+  const sections = [...document.querySelectorAll("section[id]")];
+  const navLinks = [...document.querySelectorAll(".navlinks a")];
+  if ("IntersectionObserver" in window) {
+    const sectionObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        navLinks.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#"+entry.target.id));
+      });
+    }, {rootMargin:"-35% 0px -55% 0px", threshold:0});
+    sections.forEach(s => sectionObserver.observe(s));
+  }
+
+  // Keyboard-friendly tilt for cards is intentionally omitted: hover motion
+  // stays mouse/trackpad-only and does not interfere with keyboard navigation.
+})();
+</script>
+
+</body>
+</html>

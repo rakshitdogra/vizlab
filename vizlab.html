@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VizLab — Research Visualization Maker</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2028%2028%22%3E%3Crect%20width=%2228%22%20height=%2228%22%20rx=%228%22%20fill=%22%23172A3A%22/%3E%3Crect%20x=%227%22%20y=%2211%22%20width=%224%22%20height=%2210%22%20rx=%222%22%20fill=%22%23E9C46A%22/%3E%3Crect%20x=%2213%22%20y=%226%22%20width=%224%22%20height=%2215%22%20rx=%222%22%20fill=%22%232A9D8F%22/%3E%3Crect%20x=%2219%22%20y=%229%22%20width=%224%22%20height=%2212%22%20rx=%222%22%20fill=%22%23E76F51%22/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f5f5f2; --panel:#ffffff; --panel2:#f0f1ed; --text:#17212b;
+  --muted:#68737d; --line:#dfe3df; --accent:#172a3a;
+  --shadow:0 18px 50px rgba(23,42,58,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,select,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1500px;margin:auto;padding:28px}
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:22px}
+.brand h1{font-size:27px;letter-spacing:-.04em;margin:0}
+.brand p{margin:5px 0 0;color:var(--muted);font-size:14px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:10px;font-weight:650}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn:hover{filter:brightness(.97)}
+.layout{display:grid;grid-template-columns:460px minmax(0,1fr);gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.controls{padding:20px}
+.section{padding-bottom:19px;margin-bottom:19px;border-bottom:1px solid var(--line)}
+.section:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.section h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;margin:0 0 11px;color:var(--muted)}
+textarea{width:100%;min-height:205px;resize:vertical;border:1px solid var(--line);border-radius:12px;background:#fafbf9;padding:13px;font:12px/1.55 "SFMono-Regular",Consolas,monospace;color:#24313a;outline:none}
+textarea:focus,select:focus,input:focus{border-color:#8095a5;box-shadow:0 0 0 3px rgba(69,123,157,.12)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px}
+select,input{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 10px;color:var(--text);outline:none}
+.check{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:12px;color:var(--text)}
+.check input{width:auto;height:auto}
+.notice{margin-top:10px;padding:10px 12px;border-radius:9px;background:#f5f1e7;color:#69552b;font-size:12px;line-height:1.45}
+.stage{padding:18px;min-width:0}
+.preview{border:1px solid var(--line);border-radius:14px;background:#fff;padding:26px;overflow:auto}
+.figure-head{max-width:1100px;margin:0 auto 14px}
+.figure-title{font-family:Georgia,serif;font-size:25px;letter-spacing:-.02em;margin:0 0 5px}
+.figure-sub{color:var(--muted);font-size:12px;margin:0}
+.canvas-wrap{max-width:1100px;margin:auto;min-height:520px;display:block}
+#viz{width:100%;height:auto;display:block}
+.caption{max-width:1100px;margin:12px auto 0;padding-top:12px;border-top:1px solid #eceeeb;font-family:Georgia,serif;font-size:13px;line-height:1.55;color:#39434b}
+.status{font-size:11px;color:var(--muted);margin-top:8px;min-height:15px}
+.palette{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px}.stepper{display:grid;grid-template-columns:40px 1fr 40px;gap:5px;align-items:center}
+.btn.mini{height:40px;padding:0;font-size:18px}
+.step-value{height:40px;border:1px solid var(--line);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:750;background:#fafbf9}
+
+.swatch{height:24px;border-radius:5px;border:1px solid rgba(0,0,0,.06)}
+.footer-note{font-size:11px;color:var(--muted);margin-top:14px;text-align:center}
+@media(max-width:950px){.layout{grid-template-columns:1fr}.controls{order:2}.stage{order:1}.topbar{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){.app{padding:14px}.preview{padding:14px}.grid2{grid-template-columns:1fr}.canvas-wrap{min-height:390px}.figure-title{font-size:21px}}
+/* =========================================================
+   HELP ICON + TOOLTIP  (pure CSS, no JavaScript required)
+   Pair with help-tooltip.html
+   ========================================================= */
+
+/* Wrapper: the positioning anchor for the tooltip */
+.help {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 6px;
+  /* Reset inherited styling (e.g. when placed inside uppercase headings) */
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+/* The small circle containing "?" */
+.help__icon {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid #68737d;
+  border-radius: 50%;
+  background: #fff;
+  color: #68737d;
+  font: 700 10px/1 system-ui, sans-serif;
+  cursor: help;
+  transition: color .15s, border-color .15s;
+}
+.help__icon:hover,
+.help__icon:focus-visible { color: #172a3a; border-color: #172a3a; }
+.help__icon:focus-visible { outline: 2px solid #457b9d; outline-offset: 2px; }
+
+/* The dark tooltip box: hidden by default, fades in above the icon */
+.help__tip {
+  position: absolute;
+  bottom: calc(100% + 8px);          /* sits directly above the icon */
+  left: 50%;
+  transform: translate(-50%, 4px);   /* small upward slide while fading */
+  width: max-content;
+  max-width: 220px;
+  padding: 8px 10px;
+  border-radius: 8px;                /* subtle rounding */
+  background: #17212b;
+  color: #fff;
+  font: 400 12px/1.45 system-ui, sans-serif;
+  text-align: left;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 50;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+}
+
+/* Little arrow pointing at the icon */
+.help__tip::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  margin-left: -4px;
+  width: 8px;
+  height: 8px;
+  background: #17212b;
+  transform: rotate(45deg);
+}
+
+/* Show on mouse hover AND keyboard focus (accessibility) */
+.help:hover .help__tip,
+.help:focus-within .help__tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition-delay: 0s;
+}
+
+/* Optional: user pressed Escape (WCAG 1.4.13 "dismissible") */
+.help.is-dismissed .help__tip { opacity: 0 !important; visibility: hidden !important; }
+
+/* ---------- Optional placement modifiers ---------- */
+
+/* Tooltip to the RIGHT of the icon:  <span class="help help--right"> */
+.help--right .help__tip { bottom: 50%; left: calc(100% + 8px); transform: translate(-4px, 50%); }
+.help--right:hover .help__tip,
+.help--right:focus-within .help__tip { transform: translate(0, 50%); }
+.help--right .help__tip::after { bottom: 50%; left: -4px; margin: 0 0 -4px; }
+
+/* Anchor tooltip to the icon's left edge (near a left screen edge) */
+.help--start .help__tip { left: -8px; transform: translate(0, 4px); }
+.help--start:hover .help__tip, .help--start:focus-within .help__tip { transform: translate(0, 0); }
+.help--start .help__tip::after { left: 15px; }
+
+/* Anchor tooltip to the icon's right edge (near a right screen edge) */
+.help--end .help__tip { left: auto; right: -8px; transform: translate(0, 4px); }
+.help--end:hover .help__tip, .help--end:focus-within .help__tip { transform: translate(0, 0); }
+.help--end .help__tip::after { left: auto; right: 12px; margin-left: 0; }
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .help__tip, .help__icon { transition: none; }
+}
+
+/* graph toolbar (font / zoom / legend) */
+.toolbar{position:sticky;top:8px;z-index:20;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 14px;margin-bottom:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.tb-group{display:flex;align-items:center;gap:6px}
+.tb-label{font-size:11px;font-weight:700;color:var(--muted);display:inline-flex;align-items:center;margin-right:2px}
+.toolbar .stepper{grid-template-columns:34px 54px 34px}
+.toolbar .btn{padding:0 10px;height:34px;font-size:12px}
+.toolbar .btn.mini{width:34px;padding:0;font-size:17px;height:34px}
+.toolbar .step-value{height:34px}
+.toolbar .seg .btn{width:34px;padding:0;font-size:13px}
+.toolbar .seg .btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.toolbar .seg{display:flex;gap:4px}
+#viz .legend-g{cursor:grab;touch-action:none}
+#viz .legend-g:active{cursor:grabbing}
+
+dialog#exportDlg{border:1px solid var(--line);border-radius:16px;padding:22px;width:min(360px,92vw);box-shadow:0 24px 60px rgba(23,42,58,.25);color:var(--text)}
+dialog#exportDlg::backdrop{background:rgba(23,33,43,.4)}
+#exportDlg h3{margin:0 0 4px;font-size:17px}
+#exportDlg p{margin:0 0 14px;font-size:12px;color:var(--muted)}
+#exportDlg .check{margin-top:9px;font-size:13px}
+#exportDlg .quick{display:flex;gap:6px;margin-bottom:6px}
+#exportDlg .quick .btn{padding:6px 12px;font-size:12px}
+#exportDlg .row{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+
+#seriesFields{display:block;width:100%;height:auto;min-height:170px;padding:6px;font-size:13px;resize:vertical;overflow:auto}
+#seriesFields option{padding:7px 10px;border-radius:6px;white-space:nowrap}
+/* ---- Glassmorphism for scrollable fields ---- */
+.controls{background:radial-gradient(circle at 12% 6%,rgba(42,157,143,.24),transparent 42%),radial-gradient(circle at 95% 45%,rgba(231,111,81,.18),transparent 42%),radial-gradient(circle at 25% 100%,rgba(69,123,157,.24),transparent 48%),#fff}
+textarea,#seriesFields{background:rgba(255,255,255,.42)!important;-webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5);border:1px solid rgba(255,255,255,.75);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 6px 20px rgba(23,42,58,.08)}
+textarea:focus,#seriesFields:focus{border-color:rgba(69,123,157,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 0 0 3px rgba(69,123,157,.15),0 6px 20px rgba(23,42,58,.08)}
+#seriesFields option:checked{background:rgba(23,42,58,.82) linear-gradient(0deg,rgba(23,42,58,.82),rgba(23,42,58,.82));color:#fff}
+.toolbar{background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4)}
+textarea,#seriesFields,.preview{scrollbar-width:thin;scrollbar-color:rgba(23,42,58,.3) transparent}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){textarea,#seriesFields{background:rgba(255,255,255,.9)!important}.toolbar{background:#fff}}
+/* VizLab brand */
+.vizlab-brand,.vizlab-heading{color:#172A3A;text-decoration:none;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:20px;font-weight:850;letter-spacing:-.04em}
+.vizlab-brand{display:inline-flex;align-items:center;gap:10px}
+.site-footer{margin-top:22px;padding:16px 0 4px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <h1>
+        <!-- VizLab icon + heading -->
+        <a class="vizlab-brand" href="#" aria-label="VizLab">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="28" height="28" rx="8" fill="#172A3A"/>
+          <rect x="7" y="11" width="4" height="10" rx="2" fill="#E9C46A"/>
+          <rect x="13" y="6" width="4" height="15" rx="2" fill="#2A9D8F"/>
+          <rect x="19" y="9" width="4" height="12" rx="2" fill="#E76F51"/>
+        </svg>
+        <span>VizLab</span>
+        </a>
+      </h1>
+      <p>Paste research data → publication-ready visualization.</p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="sampleBtn">Load sample</button>
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn primary" id="pngBtn">Export PNG</button>
+      <button class="btn primary" id="svgBtn">Export SVG</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="panel controls">
+      <div class="section">
+        <h2>1 · Data</h2>
+        <textarea id="dataInput" spellcheck="false" aria-label="CSV or JSON data"></textarea>
+        <div class="grid2" style="margin-top:10px">
+          <button class="btn" id="csvBtn">CSV example</button>
+          <button class="btn" id="jsonBtn">JSON example</button>
+        </div>
+        <div class="status" id="status"></div>
+      </div>
+
+      <div class="section">
+        <h2>2 · Chart</h2>
+        <div class="grid2">
+          <div><label>Type</label><select id="type">
+            <option value="line">Line chart</option>
+            <option value="bar">Bar chart</option>
+            <option value="heatmap">Heatmap</option>
+            <option value="area">Area chart</option>
+            <option value="stackedbar">Stacked bar</option>
+            <option value="groupedbar">Grouped bar</option>
+            <option value="scatter">Scatter plot</option>
+            <option value="bubble">Bubble chart</option>
+            <option value="pie">Pie chart</option>
+            <option value="donut">Donut chart</option>
+            <option value="lollipop">Lollipop chart</option>
+            <option value="dumbbell">Dumbbell chart</option>
+          </select></div>
+          <div><label>X / row field</label><select id="xField"></select></div>
+        </div>
+        <div style="margin-top:10px"><label>Series / value fields</label><select id="seriesFields" multiple size="6" aria-label="Series / value fields"></select></div>
+        <div class="notice">Choose the visual according to the data logic: trends → line/area, categories → bar/lollipop, composition → stacked/pie/donut, relationships → scatter/bubble, paired change → dumbbell, matrix → heatmap. Hold Cmd/Ctrl for multiple series.</div>
+      </div>
+
+      <div class="section">
+        <h2>3 · Presentation</h2>
+        <div class="grid2">
+          <div><label>Title</label><input id="title" value="PR-AUC across forecasting horizons"></div>
+          <div><label>Y-axis label</label><input id="yLabel" value="PR-AUC"></div>
+        </div>
+        <div style="margin-top:10px"><label>Subtitle</label><input id="subtitle" value="Comparison of forecasting configurations across horizons"></div>
+        <div style="margin-top:10px"><label>Caption</label><input id="caption" value="Predictive performance across five forecasting horizons. Values are reported as supplied in the experiment results."></div>
+      </div>
+
+      <div class="section">
+        <h2>4 · Style</h2>
+        <div class="grid2">
+          <div><label>Theme</label><select id="theme">
+            <option value="editorial">Editorial</option>
+            <option value="ink">Ink</option>
+            <option value="paper">Paper</option>
+            <option value="dark">Dark</option>
+          </select></div>
+          <div><label>Font</label><select id="font">
+            <option value="sans">Modern Sans</option>
+            <option value="serif">Academic Serif</option>
+          </select></div>
+        </div>
+        <label class="check"><input id="labels" type="checkbox" checked> Show values</label>
+        <label class="check"><input id="grid" type="checkbox" checked> Show grid</label>
+        <label class="check"><input id="legend" type="checkbox" checked> Show legend</label>
+        <div class="palette" id="palette"></div>
+      </div>
+
+      <div class="section">
+        <h2>5 · Dimensions</h2>
+        <div class="grid2">
+          <div><label>Width</label><input id="width" type="number" min="500" max="2400" value="1200"></div>
+          <div><label>Height</label><input id="height" type="number" min="350" max="1600" value="720"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>6 · Readability</h2>
+        <label class="check"><input id="smartLabels" type="checkbox" checked> Smart label placement</label>
+        <div class="notice">Labels automatically hide or shift when points are too close. Font size, zoom and legend position controls sit above the graph. Drag the legend to any side; it snaps there so it never covers the plot.</div>
+      </div>
+    </aside>
+
+    <main class="panel stage">
+      <div class="toolbar" role="toolbar" aria-label="Graph controls">
+        <div class="tb-group"><span class="tb-label" data-help="Scales every piece of text in the chart (axis labels, values, legend).">Font size</span>
+          <div class="stepper">
+            <button class="btn mini" id="fontMinus" type="button" aria-label="Decrease font size">−</button>
+            <div class="step-value" id="fontValue">100%</div>
+            <button class="btn mini" id="fontPlus" type="button" aria-label="Increase font size">+</button>
+          </div>
+          <button class="btn" id="fontDefault" type="button">Default</button></div>
+        <div class="tb-group"><span class="tb-label" data-help="Enlarges or shrinks the whole graph. Scroll inside the preview when zoomed in. Exported data is unchanged.">Zoom</span>
+          <div class="stepper">
+            <button class="btn mini" id="zoomMinus" type="button" aria-label="Zoom out graph">−</button>
+            <div class="step-value" id="zoomValue">100%</div>
+            <button class="btn mini" id="zoomPlus" type="button" aria-label="Zoom in graph">+</button>
+          </div>
+          <button class="btn" id="zoomDefault" type="button">Default</button></div>
+        <div class="tb-group" data-end="1"><span class="tb-label" data-help="Drag the legend inside the graph, or use these buttons, to place it left, top, bottom or right. Reset restores the default.">Legend</span>
+          <div class="seg">
+            <button class="btn" type="button" data-side="left" aria-label="Legend on left">◀</button>
+            <button class="btn" type="button" data-side="top" aria-label="Legend on top">▲</button>
+            <button class="btn" type="button" data-side="bottom" aria-label="Legend on bottom">▼</button>
+            <button class="btn" type="button" data-side="right" aria-label="Legend on right">▶</button>
+          </div>
+          <button class="btn" id="legendReset" type="button">Reset</button></div>
+      </div>
+      <div class="preview" id="preview">
+        <div class="figure-head">
+          <h2 class="figure-title" id="outTitle"></h2>
+          <p class="figure-sub" id="outSubtitle"></p>
+        </div>
+        <div class="canvas-wrap"><svg id="viz" role="img" aria-label="Generated research visualization"></svg></div>
+        <div class="caption" id="outCaption"></div>
+      </div>
+      <div class="footer-note">No server, database, account, or upload required. Everything runs locally in your browser.</div>
+    </main>
+  </div>
+  <footer class="site-footer">VizLab - Research Visualization Maker &copy; Rakshit Dogra.</footer>
+</div>
+
+
+<dialog id="exportDlg" aria-labelledby="exportDlgTitle">
+  <h3 id="exportDlgTitle">Export</h3>
+  <p>Choose what to include with the graph.</p>
+  <div class="quick"><button class="btn" type="button" id="expAll">Select all</button><button class="btn" type="button" id="expNone">Select none</button></div>
+  <label class="check"><input id="expTitle" type="checkbox" checked> Title</label>
+  <label class="check"><input id="expSubtitle" type="checkbox" checked> Subtitle</label>
+  <label class="check"><input id="expCaption" type="checkbox" checked> Caption</label>
+  <div class="row"><button class="btn" type="button" id="expCancel">Cancel</button><button class="btn primary" type="button" id="expGo">Export</button></div>
+</dialog>
+<script>
+(() => {
+"use strict";
+
+const SAMPLE = `Horizon,History,History + Activity,History + Dependency,History + Ecosystem,Full
+30,0.0963,0.1073,0.1201,0.0707,0.0785
+60,0.1587,0.1730,0.1733,0.1294,0.1176
+90,0.2080,0.2159,0.2118,0.2088,0.2171
+120,0.2433,0.2497,0.2446,0.2466,0.2789
+180,0.2826,0.2756,0.2826,0.2893,0.3038`;
+
+const JSON_SAMPLE = `[{"Horizon":30,"History":0.0963,"Activity":0.1073,"Dependency":0.1201,"Ecosystem":0.0707,"Full":0.0785},{"Horizon":60,"History":0.1587,"Activity":0.173,"Dependency":0.1733,"Ecosystem":0.1294,"Full":0.1176},{"Horizon":90,"History":0.208,"Activity":0.2159,"Dependency":0.2118,"Ecosystem":0.2088,"Full":0.2171},{"Horizon":120,"History":0.2433,"Activity":0.2497,"Dependency":0.2446,"Ecosystem":0.2466,"Full":0.2789},{"Horizon":180,"History":0.2826,"Activity":0.2756,"Dependency":0.2826,"Ecosystem":0.2893,"Full":0.3038}]`;
+
+const $ = id => document.getElementById(id);
+const els = {
+  data:$("dataInput"), status:$("status"), type:$("type"), x:$("xField"),
+  series:$("seriesFields"), title:$("title"), subtitle:$("subtitle"), caption:$("caption"),
+  theme:$("theme"), font:$("font"), labels:$("labels"), grid:$("grid"), legend:$("legend"),
+  width:$("width"), height:$("height"), svg:$("viz"), palette:$("palette"),
+  yLabel:$("yLabel"),
+  fontMinus:$("fontMinus"), fontPlus:$("fontPlus"), fontDefault:$("fontDefault"), fontValue:$("fontValue"),
+  zoomMinus:$("zoomMinus"), zoomPlus:$("zoomPlus"), zoomDefault:$("zoomDefault"), zoomValue:$("zoomValue"),
+  smartLabels:$("smartLabels"),
+  outTitle:$("outTitle"), outSubtitle:$("outSubtitle"), outCaption:$("outCaption"),
+  preview:$("preview")
+};
+
+let rows = [], fields = [];
+
+const PALETTES = {
+  editorial:["#172A3A","#2A9D8F","#E76F51","#E9C46A","#457B9D","#8E6C8A"],
+  ink:["#111827","#374151","#6B7280","#9CA3AF","#4B5563","#1F2937"],
+  paper:["#264653","#2A9D8F","#E76F51","#E9C46A","#F4A261","#457B9D"],
+  dark:["#8BD3DD","#F7A072","#FFD166","#A8DADC","#CDB4DB","#BDE0FE"]
+};
+
+function escapeXML(s){
+  return String(s).replace(/[<>&'"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;","'":"&apos;",'"':"&quot;"}[c]));
+}
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if(!lines.length) return [];
+  const parseLine = line => {
+    const out=[]; let cur="", quoted=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c === '"' && line[i+1] === '"' && quoted){cur+='"';i++}
+      else if(c === '"'){quoted=!quoted}
+      else if(c === ',' && !quoted){out.push(cur.trim());cur=""}
+      else cur+=c;
+    }
+    out.push(cur.trim()); return out;
+  };
+  const head=parseLine(lines[0]);
+  return lines.slice(1).map(line=>{
+    const vals=parseLine(line), obj={};
+    head.forEach((h,i)=>obj[h] = vals[i] ?? "");
+    return obj;
+  });
+}
+function parseData(text){
+  const t=text.trim();
+  if(!t) return [];
+  if(t.startsWith("[") || t.startsWith("{")){
+    const j=JSON.parse(t);
+    return Array.isArray(j)?j:[j];
+  }
+  return parseCSV(t);
+}
+function numeric(v){ return v!=="" && Number.isFinite(Number(v)); }
+function format(v){
+  if(!Number.isFinite(v)) return "";
+  if(Math.abs(v)>=100) return v.toLocaleString(undefined,{maximumFractionDigits:0});
+  if(Math.abs(v)<1) return v.toFixed(4).replace(/0+$/,"").replace(/\.$/,"");
+  return v.toFixed(2).replace(/0+$/,"").replace(/\.$/,"");
+}
+function setStatus(msg, bad=false){
+  els.status.textContent=msg;
+  els.status.style.color=bad?"#A33A2B":"";
+}
+function refreshFields(){
+  fields=rows.length?Object.keys(rows[0]):[];
+  els.x.innerHTML="";
+  els.series.innerHTML="";
+  fields.forEach((f,i)=>{
+    const o=document.createElement("option"); o.value=f;o.textContent=f;els.x.appendChild(o);
+    if(i>0 && rows.some(r=>numeric(r[f]))){
+      const s=document.createElement("option");s.value=f;s.textContent=f;s.selected=true;els.series.appendChild(s);
+    }
+  });
+  const first=fields.find(f=>rows.some(r=>numeric(r[f])));
+  if(first) els.x.value=fields[0];
+  if(!els.series.options.length && first){
+    const s=document.createElement("option");s.value=first;s.textContent=first;s.selected=true;els.series.appendChild(s);
+  }
+}
+function read(){
+  try{
+    rows=parseData(els.data.value);
+    if(!rows.length) throw Error("No rows found.");
+    refreshFields();
+    setStatus(`${rows.length} rows · ${fields.length} fields`);
+    render();
+  }catch(e){setStatus(e.message||"Could not parse data.",true)}
+}
+function selectedSeries(){
+  return [...els.series.selectedOptions].map(o=>o.value).filter(f=>rows.some(r=>numeric(r[f])));
+}
+function themeConfig(){
+  const dark=els.theme.value==="dark";
+  const bg=dark?"#15191d":"#ffffff", text=dark?"#f2f4f5":"#17212b";
+  const muted=dark?"#aab3ba":"#68737d", grid=dark?"#343b41":"#e6e9e6";
+  return {bg,text,muted,grid,colors:PALETTES[els.theme.value]};
+}
+function svgEl(name,attrs={},text=""){
+  const e=document.createElementNS("http://www.w3.org/2000/svg",name);
+  Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+  if(text!=="" ) e.textContent=text;
+  return e;
+}
+
+let fontScale = 1;
+let zoomScale = 1;
+
+function fs(n){
+  return Math.max(8, Math.round(n * fontScale));
+}
+
+function updateReadabilityUI(){
+  els.fontValue.textContent=Math.round(fontScale*100)+"%";
+  els.zoomValue.textContent=Math.round(zoomScale*100)+"%";
+}
+
+function setFontScale(v){
+  fontScale=Math.max(.7,Math.min(1.5,v));
+  updateReadabilityUI(); render();
+}
+function setZoomScale(v){
+  zoomScale=Math.max(.75,Math.min(1.6,v));
+  updateReadabilityUI(); render();
+}
+
+function smartLabelPositions(points, minDistance=24){
+  const accepted=[];
+  return points.map(p=>{
+    if(!els.smartLabels.checked) return {...p,show:true,dy:-10};
+    let crowded=false;
+    for(const q of accepted){
+      if(Math.hypot(p.x-q.x,p.y-q.y)<minDistance){crowded=true;break;}
+    }
+    if(crowded) return {...p,show:false,dy:-10};
+    accepted.push(p);
+    return {...p,show:true,dy:-10};
+  });
+}
+
+/* Data labels are queued while charts draw, then placed once everything else
+   (axis text, markers, lines, bars, legend) exists, so they never sit on top of it. */
+let pending=[];
+function resetLabelLayout(){ pending=[]; }
+function approxTextWidth(text,size){ return Math.max(size*1.6,String(text).length*size*.56); }
+function labelBox(x,y,text,size,anchor){
+  const w=approxTextWidth(text,size), h=size*1.25;
+  let left=x-w/2,right=x+w/2;
+  if(anchor==="start"){left=x;right=x+w}
+  if(anchor==="end"){left=x-w;right=x}
+  return {left,right,top:y-h*.82,bottom:y+h*.28};
+}
+function boxesTouch(a,b,pad=2){
+  return !(a.right+pad<b.left || a.left-pad>b.right || a.bottom+pad<b.top || a.top-pad>b.bottom);
+}
+function contrastText(hex){
+  const n=parseInt(hex.slice(1),16),l=(.299*(n>>16)+.587*((n>>8)&255)+.114*(n&255))/255;
+  return l>.6?"#17212b":"#ffffff";
+}
+function placeDataLabel(svg,text,x,y,opts={}){
+  if(!els.labels.checked)return false;
+  pending.push({text,x,y,opts}); return true;
+}
+function collectObstacles(svg){
+  const obs=[], stacked=els.type.value==="stackedbar", heat=els.type.value==="heatmap";
+  svg.querySelectorAll("text").forEach(t=>{
+    const s=+t.getAttribute("font-size")||11,x=+t.getAttribute("x"),y=+t.getAttribute("y"),txt=t.textContent;
+    if(t.getAttribute("transform")){const w=approxTextWidth(txt,s);obs.push({left:x-s,right:x+s*.5,top:y-w/2,bottom:y+w/2})}
+    else obs.push(labelBox(x,y,txt,s,t.getAttribute("text-anchor")||"start"));
+  });
+  svg.querySelectorAll("circle").forEach(c=>{
+    const r=+c.getAttribute("r"); if(r>24)return;
+    const cx=+c.getAttribute("cx"),cy=+c.getAttribute("cy");
+    obs.push({left:cx-r-1,right:cx+r+1,top:cy-r-1,bottom:cy+r+1});
+  });
+  if(!stacked&&!heat)svg.querySelectorAll("rect").forEach(r=>{
+    const x=+r.getAttribute("x"),y=+r.getAttribute("y"),w=+r.getAttribute("width"),h=+r.getAttribute("height");
+    if(w*h<40000)obs.push({left:x,right:x+w,top:y,bottom:y+h});
+  });
+  svg.querySelectorAll("polyline").forEach(pl=>{
+    const p=pl.getAttribute("points").trim().split(/\s+/).map(s=>s.split(",").map(Number));
+    for(let i=1;i<p.length;i++){
+      const [x1,y1]=p[i-1],[x2,y2]=p[i],n=Math.max(1,Math.ceil(Math.hypot(x2-x1,y2-y1)/5));
+      for(let k=0;k<=n;k++){const x=x1+(x2-x1)*k/n,y=y1+(y2-y1)*k/n;obs.push({left:x-2,right:x+2,top:y-2,bottom:y+2})}
+    }
+  });
+  return obs;
+}
+function flushLabels(svg,W,H){
+  const obs=collectObstacles(svg), placed=[];
+  for(const {text,x,y,opts} of pending){
+    const size=fs(opts.size||10), anchor=opts.anchor||"middle", fill=opts.fill||themeConfig().text;
+    let cands=[[0,0]];
+    if(opts.inside){
+      if(opts.boxH<size*1.35||approxTextWidth(text,size)>opts.boxW)continue;
+    }else{
+      const s=size;
+      cands=[[0,0],[0,-s*1.5],[0,s*1.7],[-s*2,-s],[s*2,-s],[-s*2,s*1.7],[s*2,s*1.7],[-s*4,-s],[s*4,-s],
+             [0,-s*2.6],[0,s*2.8],[-s*3,-s*2.4],[s*3,-s*2.4],[-s*3,s*2.8],[s*3,s*2.8],[0,-s*3.8],[0,s*4]];
+    }
+    for(const [dx,dy] of cands){
+      const nx=x+dx,ny=y+dy,box=labelBox(nx,ny,text,size,anchor);
+      if(box.left<4||box.right>W-4||box.top<4||box.bottom>H-4)continue;
+      if(placed.some(b=>boxesTouch(box,b)))continue;
+      if(!opts.inside&&obs.some(b=>boxesTouch(box,b,1)))continue;
+      placed.push(box);
+      svg.appendChild(svgEl("text",{x:nx,y:ny,fill,"font-size":String(size),"font-weight":opts.weight||"500","text-anchor":anchor,"font-family":"Inter,system-ui,sans-serif"},String(text)));
+      break;
+    }
+  }
+  pending=[];
+}
+
+/* ---------- Draggable legend ---------- */
+let legendState={side:"right",t:null};
+function legendItems(type,series,xField,cfg){
+  if(type==="heatmap"||type==="lollipop")return {kind:"line",items:[]};
+  if(type==="pie"||type==="donut"){
+    const s=series[0];
+    return {kind:"box",items:s?rows.map(r=>({label:String(r[xField]),v:Number(r[s])})).filter(d=>Number.isFinite(d.v)&&d.v>=0).map((d,i)=>({label:d.label,color:cfg.colors[i%6]})):[]};
+  }
+  if(type==="dumbbell")return {kind:"dot",items:series.slice(0,2).map((s,i)=>({label:s,color:cfg.colors[i]}))};
+  return {kind:["bar","groupedbar","stackedbar"].includes(type)?"box":"line",items:series.map((s,i)=>({label:s,color:cfg.colors[i%6]}))};
+}
+function legendLayout(items,side,W){
+  const size=fs(12),rowH=size+12,sw=26,pad=10,gap=8;
+  const tw=items.map(it=>sw+gap+approxTextWidth(it.label,size));
+  const pos=[];let w,h;
+  if(side==="left"||side==="right"){
+    items.forEach((it,i)=>pos.push({x:pad,y:pad+i*rowH}));
+    w=Math.max(...tw)+pad*2;h=pad*2+items.length*rowH;
+  }else{
+    const maxW=W-40;let x=pad,row=0;
+    items.forEach((it,i)=>{if(x>pad&&x+tw[i]>maxW){x=pad;row++}pos.push({x,y:pad+row*rowH});x+=tw[i]+18});
+    w=Math.min(maxW,Math.max(...pos.map((p,i)=>p.x+tw[i]))+pad);h=pad*2+(row+1)*rowH;
+  }
+  return {w,h,pos,size,rowH,sw,gap};
+}
+function legendXY(L,side,W,H,m,t){
+  const along=(span,room)=>room<=0?0:Math.max(0,Math.min(1,t))*room;
+  if(side==="right"||side==="left"){
+    return {x:side==="right"?W-L.w-12:12,y:t==null?m.top:8+along(0,H-L.h-16)};
+  }
+  return {x:t==null?m.left:8+along(0,W-L.w-16),y:side==="top"?10:H-L.h-10};
+}
+function svgPoint(e){
+  const svg=els.svg,pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function drawLegend(svg,L,li,side,W,H,m,cfg){
+  const {x,y}=legendXY(L,side,W,H,m,legendState.t);
+  const g=svgEl("g",{class:"legend-g",role:"group","aria-label":"Legend (drag to move)"});
+  g.appendChild(svgEl("title",{},"Drag to move the legend"));
+  g.appendChild(svgEl("rect",{x,y,width:L.w,height:L.h,rx:"8",fill:cfg.bg,stroke:cfg.grid,"stroke-dasharray":"3 3"}));
+  li.items.forEach((it,i)=>{
+    const p=L.pos[i],ix=x+p.x,iy=y+p.y,cy=iy+L.rowH/2;
+    if(li.kind==="line"){g.appendChild(svgEl("line",{x1:ix,y1:cy,x2:ix+L.sw-4,y2:cy,stroke:it.color,"stroke-width":"4","stroke-linecap":"round"}))}
+    else if(li.kind==="dot"){g.appendChild(svgEl("circle",{cx:ix+(L.sw-4)/2,cy,r:"6",fill:it.color}))}
+    else g.appendChild(svgEl("rect",{x:ix+3,y:cy-6,width:14,height:12,rx:"2",fill:it.color}));
+    g.appendChild(svgEl("text",{x:ix+L.sw+L.gap-4,y:cy+L.size*.35,fill:cfg.text,"font-size":String(L.size),"font-family":"Inter,system-ui,sans-serif"},it.label));
+  });
+  svg.appendChild(g);
+  g.addEventListener("pointerdown",e=>{
+    e.preventDefault();g.setPointerCapture(e.pointerId);
+    const p0=svgPoint(e),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+    const pos=ev=>{const p=svgPoint(ev);return {x:clamp(x+p.x-p0.x,0,W-L.w),y:clamp(y+p.y-p0.y,0,H-L.h)}};
+    const move=ev=>{const q=pos(ev);g.setAttribute("transform",`translate(${q.x-x} ${q.y-y})`)};
+    const up=ev=>{
+      g.removeEventListener("pointermove",move);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",up);
+      const q=pos(ev),cx=q.x+L.w/2,cy=q.y+L.h/2;
+      const d={left:cx/W,right:(W-cx)/W,top:cy/H,bottom:(H-cy)/H};
+      const s=Object.keys(d).reduce((a,b)=>d[a]<=d[b]?a:b);
+      const vert=s==="left"||s==="right";
+      const room=vert?H-L.h-16:W-L.w-16;
+      legendState={side:s,t:room<=0?0:clamp(((vert?q.y:q.x)-8)/room,0,1)};
+      syncLegendButtons();render();
+    };
+    g.addEventListener("pointermove",move);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",up);
+  });
+}
+function syncLegendButtons(){
+  document.querySelectorAll("[data-side]").forEach(b=>b.classList.toggle("on",b.dataset.side===legendState.side));
+}
+function setLegendSide(s){legendState={side:s,t:null};syncLegendButtons();render()}
+
+function render(){
+  if(!rows.length)return;
+  const W=Math.max(500,Math.min(2400,+els.width.value||1200));
+  const H=Math.max(350,Math.min(1600,+els.height.value||720));
+  const cfg=themeConfig(), dark=els.theme.value==="dark";
+  resetLabelLayout();
+  const svg=els.svg; svg.innerHTML=""; svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.style.background=cfg.bg;
+  const title=els.title.value||"Untitled visualization";
+  const xField=els.x.value;
+  const series=selectedSeries();
+  if(els.outTitle) els.outTitle.textContent=title;
+  if(els.outSubtitle) els.outSubtitle.textContent=els.subtitle.value;
+  if(els.outCaption) els.outCaption.textContent=els.caption.value;
+  if(els.preview) els.preview.style.background=cfg.bg;
+  if(els.outTitle) {
+    els.outTitle.style.color=cfg.text;
+    els.outTitle.style.fontFamily=els.font.value==="serif"?"Georgia,serif":"Inter,system-ui,sans-serif";
+  }
+  if(els.outSubtitle) els.outSubtitle.style.color=cfg.muted;
+  if(els.outCaption) {
+    els.outCaption.style.color=cfg.text;
+    els.outCaption.style.fontFamily=els.font.value==="serif"?"Georgia,serif":"Inter,system-ui,sans-serif";
+  }
+
+  const wrap=els.svg.parentElement; wrap.style.maxWidth="none"; wrap.style.width=`calc(min(100%, 1100px) * ${zoomScale})`;
+  const li=legendItems(els.type.value,series,xField,cfg);
+  const showLegend=els.legend.checked&&li.items.length>0, side=legendState.side;
+  const L=showLegend?legendLayout(li.items,side,W):null;
+  const margin={top:52,right:35,bottom:72,left:78,yx:18,xy:H-18};
+  if(L){
+    if(side==="right")margin.right=L.w+36;
+    else if(side==="left"){margin.left=L.w+90;margin.yx=12+L.w+18}
+    else if(side==="top")margin.top=Math.max(52,L.h+26);
+    else {margin.bottom=72+L.h+12;margin.xy=H-18-L.h-12}
+  }
+  const pw=W-margin.left-margin.right, ph=H-margin.top-margin.bottom;
+  const add=(n,a,t)=>svg.appendChild(svgEl(n,a,t));
+
+  const type = els.type.value;
+  if(type==="heatmap") drawHeatmap(svg,W,H,pw,ph,margin,cfg,xField,series);
+  else if(type==="pie" || type==="donut") drawPie(svg,W,H,pw,ph,margin,cfg,xField,series,type==="donut");
+  else if(type==="scatter" || type==="bubble") drawScatter(svg,W,H,pw,ph,margin,cfg,xField,series,type==="bubble");
+  else if(type==="lollipop") drawLollipop(svg,W,H,pw,ph,margin,cfg,xField,series);
+  else if(type==="dumbbell") drawDumbbell(svg,W,H,pw,ph,margin,cfg,xField,series);
+  else drawCartesian(svg,W,H,pw,ph,margin,cfg,xField,series);
+
+  if(L)drawLegend(svg,L,li,side,W,H,margin,cfg);
+  flushLabels(svg,W,H);
+}
+function drawCartesian(svg,W,H,pw,ph,m,cfg,xField,series){
+  const add=(n,a,t)=>svg.appendChild(svgEl(n,a,t));
+  const values=series.flatMap(s=>rows.map(r=>Number(r[s])).filter(Number.isFinite));
+  let min=Math.min(0,...values),max=Math.max(0,...values);
+  if(!Number.isFinite(min))min=0;if(!Number.isFinite(max))max=1;
+  if(max===min)max=min+1;
+  const pad=(max-min)*.08;min=Math.max(0,min-pad);max+=pad;
+  const x=i=>m.left+(rows.length===1?pw/2:i/Math.max(1,rows.length-1)*pw);
+  const y=v=>m.top+ph-(v-min)/(max-min)*ph;
+
+  for(let i=0;i<=5;i++){
+    const val=min+(max-min)*i/5,yy=y(val);
+    if(els.grid.checked)add("line",{x1:m.left,y1:yy,x2:m.left+pw,y2:yy,stroke:cfg.grid});
+    add("text",{x:m.left-12,y:yy+4,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"end"},format(val));
+  }
+  rows.forEach((r,i)=>{
+    const xx=x(i);
+    if(els.grid.checked)add("line",{x1:xx,y1:m.top,x2:xx,y2:m.top+ph,stroke:cfg.grid,"stroke-dasharray":"2 6"});
+    add("text",{x:xx,y:H-m.bottom+27,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"middle"},String(r[xField]));
+  });
+  add("line",{x1:m.left,y1:m.top+ph,x2:m.left+pw,y2:m.top+ph,stroke:cfg.text});
+  add("line",{x1:m.left,y1:m.top,x2:m.left,y2:m.top+ph,stroke:cfg.text});
+  add("text",{x:m.left+pw/2,y:m.xy,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"middle"},xField);
+  add("text",{x:m.yx,y:m.top+ph/2,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"middle",transform:`rotate(-90 ${m.yx} ${m.top+ph/2})`},els.yLabel?els.yLabel.value:"Value");
+
+  if(["bar","groupedbar","stackedbar"].includes(els.type.value)){
+    const n=rows.length,gap=Math.min(16,pw/Math.max(1,n)*.16),groupW=pw/Math.max(1,n)-gap;
+    const stacked=els.type.value==="stackedbar",bw=Math.max(3,groupW/Math.max(1,series.length)-3);
+    rows.forEach((r,i)=>{
+      let stackBase=min;
+      series.forEach((s,si)=>{
+        const v=Number(r[s]);if(!Number.isFinite(v))return;
+        let xx=m.left+i*(pw/n)+gap/2+si*bw,yy,base;
+        if(stacked){base=y(stackBase);stackBase+=v;yy=y(stackBase);xx=m.left+i*(pw/n)+gap/2}
+        else{base=y(min);yy=y(v)}
+        const width=stacked?groupW:bw,top=Math.min(yy,base);
+        add("rect",{x:xx,y:top,width,height:Math.max(1,Math.abs(base-yy)),rx:"2",fill:cfg.colors[si%6]});
+        if(stacked)placeDataLabel(svg,format(v),xx+width/2,top+Math.abs(base-yy)/2+fs(10)*.35,{size:10,weight:"600",inside:true,boxH:Math.abs(base-yy),boxW:width,fill:contrastText(cfg.colors[si%6])});
+        else placeDataLabel(svg,format(v),xx+width/2,top-4,{size:10,weight:"600"});
+      });
+    });
+  }else{
+    series.forEach((s,si)=>{
+      const pts=rows.map((r,i)=>Number.isFinite(Number(r[s]))?`${x(i)},${y(Number(r[s]))}`:null).filter(Boolean);
+      if(els.type.value==="area"&&pts.length){
+        add("polygon",{points:`${x(0)},${y(min)} ${pts.join(" ")} ${x(rows.length-1)},${y(min)}`,fill:cfg.colors[si%6],opacity:".14"});
+      }
+      add("polyline",{points:pts.join(" "),fill:"none",stroke:cfg.colors[si%6],"stroke-width":"3","stroke-linecap":"round","stroke-linejoin":"round"});
+      rows.forEach((r,i)=>{
+        const v=Number(r[s]);if(!Number.isFinite(v))return;
+        add("circle",{cx:x(i),cy:y(v),r:"4.5",fill:cfg.bg,stroke:cfg.colors[si%6],"stroke-width":"3"});
+      });
+    });
+    series.forEach(s=>rows.forEach((r,i)=>{
+      const v=Number(r[s]);if(Number.isFinite(v))placeDataLabel(svg,format(v),x(i),y(v)-fs(10),{size:10});
+    }));
+  }
+}
+
+function drawScatter(svg,W,H,pw,ph,m,cfg,xField,series,bubble){
+  const add=(n,a,t)=>svg.appendChild(svgEl(n,a,t));
+  const yField=series[0];
+  if(!yField)return;
+  const points=rows.map((r,i)=>({x:Number(r[xField]),y:Number(r[yField]),i,label:String(r[xField])}))
+    .filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
+  if(!points.length){add("text",{x:W/2,y:H/2,fill:cfg.muted,"text-anchor":"middle","font-size":String(fs(14))},"Scatter plot needs two numeric fields.");return;}
+  let xmin=Math.min(...points.map(p=>p.x)), xmax=Math.max(...points.map(p=>p.x));
+  let ymin=Math.min(...points.map(p=>p.y)), ymax=Math.max(...points.map(p=>p.y));
+  if(xmin===xmax){xmin-=1;xmax+=1} if(ymin===ymax){ymin-=1;ymax+=1}
+  const px=v=>m.left+(v-xmin)/(xmax-xmin)*pw, py=v=>m.top+ph-(v-ymin)/(ymax-ymin)*ph;
+  for(let i=0;i<=5;i++){
+    const xv=xmin+(xmax-xmin)*i/5, yv=ymin+(ymax-ymin)*i/5;
+    add("line",{x1:px(xv),y1:m.top,x2:px(xv),y2:m.top+ph,stroke:cfg.grid});
+    add("line",{x1:m.left,y1:py(yv),x2:m.left+pw,y2:py(yv),stroke:cfg.grid});
+    add("text",{x:px(xv),y:H-m.bottom+25,fill:cfg.muted,"font-size":String(fs(10)),"text-anchor":"middle"},format(xv));
+    add("text",{x:m.left-10,y:py(yv)+4,fill:cfg.muted,"font-size":String(fs(10)),"text-anchor":"end"},format(yv));
+  }
+  add("line",{x1:m.left,y1:m.top+ph,x2:m.left+pw,y2:m.top+ph,stroke:cfg.text});
+  add("line",{x1:m.left,y1:m.top,x2:m.left,y2:m.top+ph,stroke:cfg.text});
+  add("text",{x:m.left+pw/2,y:m.xy,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"middle"},xField);
+  add("text",{x:m.yx,y:m.top+ph/2,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"middle",transform:`rotate(-90 ${m.yx} ${m.top+ph/2})`},yField);
+  points.forEach(p=>{
+    const radius=bubble?Math.max(6,Math.min(18,6+Math.abs(p.y-ymin)/(ymax-ymin)*12)):6;
+    add("circle",{cx:px(p.x),cy:py(p.y),r:radius,fill:cfg.colors[p.i%6],opacity:".82",stroke:cfg.bg,"stroke-width":"2"});
+    placeDataLabel(svg,format(p.y),px(p.x),py(p.y)-radius-4,{size:10});
+  });
+}
+
+function drawPie(svg,W,H,pw,ph,m,cfg,xField,series,donut){
+  const add=(n,a,t)=>svg.appendChild(svgEl(n,a,t));
+  const s=series[0]; if(!s)return;
+  const data=rows.map(r=>({label:String(r[xField]),value:Number(r[s])})).filter(d=>Number.isFinite(d.value)&&d.value>=0);
+  const total=data.reduce((a,d)=>a+d.value,0);
+  if(!total){add("text",{x:W/2,y:H/2,fill:cfg.muted,"text-anchor":"middle"},"No positive values available.");return;}
+  const cx=m.left+pw*.43, cy=m.top+ph/2, radius=Math.min(ph,pw*.7)/2.25;
+  let angle=-Math.PI/2;
+  data.forEach((d,i)=>{
+    const next=angle+d.value/total*Math.PI*2;
+    const large=next-angle>Math.PI?1:0;
+    const x1=cx+radius*Math.cos(angle),y1=cy+radius*Math.sin(angle);
+    const x2=cx+radius*Math.cos(next),y2=cy+radius*Math.sin(next);
+    const path=`M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2} Z`;
+    add("path",{d:path,fill:cfg.colors[i%6],stroke:cfg.bg,"stroke-width":"2"});
+    const mid=(angle+next)/2;
+    if(els.labels.checked){
+      const tx=cx+(radius*.7)*Math.cos(mid),ty=cy+(radius*.7)*Math.sin(mid);
+      placeDataLabel(svg,`${format(d.value/total*100)}%`,tx,ty,{size:11,fill:"#fff",weight:"700"});
+    }
+    angle=next;
+  });
+  if(donut){
+    add("circle",{cx,cy,r:radius*.52,fill:cfg.bg});
+    add("text",{x:cx,y:cy-2,fill:cfg.text,"font-size":String(fs(22)),"font-weight":"700","text-anchor":"middle"},format(total));
+    add("text",{x:cx,y:cy+17,fill:cfg.muted,"font-size":String(fs(10)),"text-anchor":"middle"},"Total");
+  }
+}
+
+function drawLollipop(svg,W,H,pw,ph,m,cfg,xField,series){
+  const add=(n,a,t)=>svg.appendChild(svgEl(n,a,t));
+  const s=series[0]; if(!s)return;
+  const vals=rows.map(r=>Number(r[s]));
+  const max=Math.max(0,...vals.filter(Number.isFinite)), min=Math.min(0,...vals.filter(Number.isFinite));
+  const span=(max-min)||1, base=m.top+ph;
+  const x=i=>m.left+(i+.5)/rows.length*pw;
+  const y=v=>m.top+ph-(v-min)/span*ph;
+  for(let i=0;i<=4;i++){const yy=m.top+ph-i*ph/4;add("line",{x1:m.left,y1:yy,x2:m.left+pw,y2:yy,stroke:cfg.grid});}
+  rows.forEach((r,i)=>{
+    const v=Number(r[s]);if(!Number.isFinite(v))return;
+    const xx=x(i),yy=y(v);
+    add("line",{x1:xx,y1:base,x2:xx,y2:yy,stroke:cfg.colors[i%6],"stroke-width":"3"});
+    add("circle",{cx:xx,cy:yy,r:"6",fill:cfg.colors[i%6]});
+    add("text",{x:xx,y:H-m.bottom+25,fill:cfg.muted,"font-size":String(fs(10)),"text-anchor":"middle"},String(r[xField]));
+    placeDataLabel(svg,format(v),xx,yy-10,{size:10});
+  });
+}
+
+function drawDumbbell(svg,W,H,pw,ph,m,cfg,xField,series){
+  const add=(n,a,t)=>svg.appendChild(svgEl(n,a,t));
+  if(series.length<2){add("text",{x:W/2,y:H/2,fill:cfg.muted,"text-anchor":"middle"},"Dumbbell needs at least two numeric series.");return;}
+  const a=series[0],b=series[1];
+  const vals=rows.flatMap(r=>[Number(r[a]),Number(r[b])]).filter(Number.isFinite);
+  let min=Math.min(0,...vals),max=Math.max(...vals);if(max===min)max=min+1;
+  const x=v=>m.left+(v-min)/(max-min)*pw;
+  const rowH=ph/Math.max(1,rows.length);
+  rows.forEach((r,i)=>{
+    const y=m.top+rowH*(i+.5), va=Number(r[a]), vb=Number(r[b]);
+    if(!Number.isFinite(va)||!Number.isFinite(vb))return;
+    add("line",{x1:x(va),y1:y,x2:x(vb),y2:y,stroke:cfg.grid,"stroke-width":"5","stroke-linecap":"round"});
+    add("circle",{cx:x(va),cy:y,r:"7",fill:cfg.colors[0]});
+    add("circle",{cx:x(vb),cy:y,r:"7",fill:cfg.colors[1]});
+    add("text",{x:m.left-12,y:y+4,fill:cfg.text,"font-size":String(fs(11)),"text-anchor":"end"},String(r[xField]));
+    placeDataLabel(svg,format(va),x(va),y-11,{size:10});
+    placeDataLabel(svg,format(vb),x(vb),y-11,{size:10});
+  });
+  add("text",{x:m.left+pw/2,y:m.xy,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"middle"},series[0]+" vs "+series[1]);
+}
+
+function drawHeatmap(svg,W,H,pw,ph,m,cfg,xField,series){
+  const add=(n,a,t)=>svg.appendChild(svgEl(n,a,t));
+  const s=series[0]; if(!s)return;
+  const vals=rows.map(r=>Number(r[s])).filter(Number.isFinite);
+  const min=Math.min(...vals),max=Math.max(...vals);
+  const cellW=pw/rows.length, cellH=Math.min(90,ph*.55);
+  const top=m.top+(ph-cellH)/2;
+  add("text",{x:m.left+pw/2,y:top-28,fill:cfg.text,"font-size":String(fs(14)),"font-weight":"700","text-anchor":"middle","font-family":"Inter,system-ui,sans-serif"},s);
+  rows.forEach((r,i)=>{
+    const v=Number(r[s]), t=max===min?.5:(v-min)/(max-min);
+    const color=heatColor(t,cfg.colors[0],cfg.colors[2]);
+    const xx=m.left+i*cellW;
+    add("rect",{x:xx+2,y:top,width:cellW-4,height:cellH,rx:"7",fill:color});
+    const heatFont=Math.max(8,Math.min(fs(14),cellW*.18));
+    add("text",{
+      x:xx+cellW/2,
+      y:top+cellH/2+heatFont*.35,
+      fill:t>.42?"#ffffff":"#17212b",
+      "font-size":String(heatFont),
+      "font-weight":"700",
+      "text-anchor":"middle",
+      "font-family":"Inter,system-ui,sans-serif"
+    },format(v));
+    add("text",{x:xx+cellW/2,y:top+cellH+25,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"middle","font-family":"Inter,system-ui,sans-serif"},String(r[xField]));
+  });
+  add("text",{x:m.left+pw/2,y:m.xy,fill:cfg.muted,"font-size":String(fs(11)),"text-anchor":"middle","font-family":"Inter,system-ui,sans-serif"},xField);
+}
+function heatColor(t,a,b){
+  const c1=a.replace("#",""),c2=b.replace("#","");
+  const n=x=>parseInt(x,16);
+  const r=Math.round(n(c1.slice(0,2))+(n(c2.slice(0,2))-n(c1.slice(0,2)))*t);
+  const g=Math.round(n(c1.slice(2,4))+(n(c2.slice(2,4))-n(c1.slice(2,4)))*t);
+  const b2=Math.round(n(c1.slice(4,6))+(n(c2.slice(4,6))-n(c1.slice(4,6)))*t);
+  return `rgb(${r},${g},${b2})`;
+}
+function download(blob,name){
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+}
+function wrapText(text,size,maxW){
+  const lines=[];let cur="";
+  for(const w of String(text).split(/\s+/).filter(Boolean)){
+    const t=cur?cur+" "+w:w;
+    if(cur&&approxTextWidth(t,size)>maxW){lines.push(cur);cur=w}else cur=t;
+  }
+  if(cur)lines.push(cur);return lines;
+}
+/* Builds the export SVG: optional title/subtitle above, optional caption below the chart. */
+function buildExportSVG(o){
+  const [,,W,H]=els.svg.getAttribute("viewBox").split(" ").map(Number);
+  const cfg=themeConfig(), ff=els.font.value==="serif"?"Georgia,serif":"Inter,system-ui,sans-serif";
+  const pad=40,maxW=W-pad*2,nodes=[];let y=0;
+  const put=(txt,size,fill,weight,lh)=>wrapText(txt,size,maxW).forEach(l=>{
+    y+=size*lh;nodes.push(svgEl("text",{x:pad,y,fill,"font-size":String(size),"font-weight":weight,"font-family":ff},l));
+  });
+  const title=o.title&&els.title.value.trim(), sub=o.subtitle&&els.subtitle.value.trim(), cap=o.caption&&els.caption.value.trim();
+  if(title||sub){
+    y=pad;
+    if(title)put(title,28,cfg.text,"700",1.25);
+    if(sub){y+=title?4:0;put(sub,16,cfg.muted,"400",1.4)}
+    y+=18;
+  }
+  const chartTop=y;y+=H;
+  if(cap){
+    y+=16;nodes.push(svgEl("line",{x1:pad,y1:y,x2:W-pad,y2:y,stroke:cfg.grid}));
+    y+=6;put(cap,14,cfg.text,"400",1.5);y+=pad*.6;
+  }
+  const out=svgEl("svg",{xmlns:"http://www.w3.org/2000/svg",viewBox:`0 0 ${W} ${y}`,width:W,height:y});
+  out.appendChild(svgEl("rect",{x:0,y:0,width:W,height:y,fill:cfg.bg}));
+  const g=svgEl("g",{transform:`translate(0 ${chartTop})`});
+  [...els.svg.childNodes].forEach(n=>g.appendChild(n.cloneNode(true)));
+  out.appendChild(g);nodes.forEach(n=>out.appendChild(n));
+  return {node:out,W,H:y};
+}
+function exportSVG(o){
+  const {node}=buildExportSVG(o);
+  const source='<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(node);
+  download(new Blob([source],{type:"image/svg+xml"}),"vizlab-figure.svg");
+}
+function exportPNG(o){
+  const {node,W,H}=buildExportSVG(o);
+  const blob=new Blob([new XMLSerializer().serializeToString(node)],{type:"image/svg+xml;charset=utf-8"}), url=URL.createObjectURL(blob), img=new Image();
+  img.onload=()=>{
+    const scale=2,c=document.createElement("canvas");c.width=W*scale;c.height=H*scale;
+    const ctx=c.getContext("2d");ctx.fillStyle=themeConfig().bg;ctx.fillRect(0,0,c.width,c.height);
+    ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+    c.toBlob(b=>download(b,"vizlab-figure.png"),"image/png");
+  };
+  img.src=url;
+}
+/* ---------- Export dialog: choose Title / Subtitle / Caption ---------- */
+let exportFormat="png";
+const expBoxes=()=>["expTitle","expSubtitle","expCaption"].map($);
+function openExport(fmt){
+  exportFormat=fmt;
+  $("exportDlgTitle").textContent="Export "+fmt.toUpperCase();
+  $("exportDlg").showModal();
+}
+function initExportDialog(){
+  const dlg=$("exportDlg");
+  $("pngBtn").addEventListener("click",()=>openExport("png"));
+  $("svgBtn").addEventListener("click",()=>openExport("svg"));
+  $("expAll").addEventListener("click",()=>expBoxes().forEach(b=>b.checked=true));
+  $("expNone").addEventListener("click",()=>expBoxes().forEach(b=>b.checked=false));
+  $("expCancel").addEventListener("click",()=>dlg.close());
+  $("expGo").addEventListener("click",()=>{
+    const o={title:$("expTitle").checked,subtitle:$("expSubtitle").checked,caption:$("expCaption").checked};
+    dlg.close();(exportFormat==="png"?exportPNG:exportSVG)(o);
+  });
+}
+function wire(){
+  $("sampleBtn").addEventListener("click",()=>{els.data.value=SAMPLE;read()});
+  $("csvBtn").addEventListener("click",()=>{els.data.value=SAMPLE;read()});
+  $("jsonBtn").addEventListener("click",()=>{els.data.value=JSON_SAMPLE;read()});
+  $("resetBtn").addEventListener("click",()=>{legendState={side:"right",t:null};syncLegendButtons();setFontScale(1);setZoomScale(1);els.data.value=SAMPLE;els.title.value="PR-AUC across forecasting horizons";els.subtitle.value="Comparison of forecasting configurations across horizons";els.caption.value="Predictive performance across five forecasting horizons. Values are reported as supplied in the experiment results.";els.type.value="line";els.theme.value="editorial";els.font.value="sans";els.labels.checked=true;els.grid.checked=true;els.legend.checked=true;read()});
+  initExportDialog();
+  els.data.addEventListener("input",()=>{clearTimeout(window.__vizTimer);window.__vizTimer=setTimeout(read,250)});
+  [els.type,els.x,els.series,els.title,els.subtitle,els.caption,els.theme,els.font,els.labels,els.grid,els.legend,els.width,els.height,els.smartLabels].forEach(e=>e.addEventListener("input",render));
+  els.theme.addEventListener("change",render);
+  els.fontMinus.addEventListener("click",()=>setFontScale(fontScale-.1));
+  els.fontPlus.addEventListener("click",()=>setFontScale(fontScale+.1));
+  els.fontDefault.addEventListener("click",()=>setFontScale(1));
+  els.zoomMinus.addEventListener("click",()=>setZoomScale(zoomScale-.1));
+  els.zoomPlus.addEventListener("click",()=>setZoomScale(zoomScale+.1));
+  els.zoomDefault.addEventListener("click",()=>setZoomScale(1));
+  document.querySelectorAll("[data-side]").forEach(b=>b.addEventListener("click",()=>setLegendSide(b.dataset.side)));
+  $("legendReset").addEventListener("click",()=>setLegendSide("right"));
+  syncLegendButtons();
+  updateReadabilityUI();
+}
+
+/* ---------- Help icons (markup mirrors help-tooltip.html) ---------- */
+function initHelp(){
+  let n=0;
+  const make=(text,name,pos)=>{
+    const id="tip-"+(++n),s=document.createElement("span");
+    s.className="help"+(pos?" help--"+pos:"");
+    s.innerHTML=`<button type="button" class="help__icon" aria-label="Help: ${name}" aria-describedby="${id}">?</button><span role="tooltip" id="${id}" class="help__tip">${text}</span>`;
+    return s;
+  };
+  // Categories (section headings)
+  const cats=["Paste your data as CSV or JSON. The first row (or key set) defines the fields. Use the examples to see the format.",
+    "Choose the chart type and which fields feed it: one X / row field and one or more numeric series.",
+    "Text that appears with the figure: title, subtitle, caption and the Y-axis label.",
+    "Look and feel: colour theme, font family and whether values, grid and legend are shown.",
+    "Size of the exported figure in pixels (width 500–2400, height 350–1600).",
+    "Options that keep labels readable. Font size, zoom and legend controls are above the graph."];
+  document.querySelectorAll(".controls .section h2").forEach((h,i)=>{
+    const name=h.textContent.replace(/^\d+\s*·\s*/,"");
+    if(cats[i])h.appendChild(make(cats[i],name,"start"));
+  });
+  // Features (individual controls)
+  const feats={dataInput:["Data","Paste CSV or JSON. Changes are read automatically."],
+    type:["Type","Line and area show trends, bars compare categories, pie and donut show composition, scatter and bubble show relationships."],
+    xField:["X / row field","The field used for the horizontal axis, categories or row names."],
+    seriesFields:["Series / value fields","Numeric fields to plot. Hold Cmd or Ctrl to select several."],
+    title:["Title","Main heading shown above the figure."],
+    yLabel:["Y-axis label","Text shown beside the vertical axis."],
+    subtitle:["Subtitle","Short line under the title that explains what is compared."],
+    caption:["Caption","Longer description shown under the graph."],
+    theme:["Theme","Colour palette and background: Editorial, Ink, Paper or Dark."],
+    font:["Font","Modern Sans or Academic Serif for the title and caption."],
+    labels:["Show values","Prints each value on the chart. Labels are moved or hidden so they never overlap the graph or each other."],
+    grid:["Show grid","Light guide lines behind the data."],
+    legend:["Show legend","Shows what each colour means. Drag it in the graph to any side."],
+    width:["Width","Figure width in pixels for the preview and export."],
+    height:["Height","Figure height in pixels for the preview and export."],
+    smartLabels:["Smart label placement","Shifts or hides crowded labels automatically."]};
+  Object.entries(feats).forEach(([id,[name,text]])=>{
+    const el=$(id),p=el.parentElement;
+    const lab=p.matches("label")?p:p.querySelector("label");
+    if(!lab)return;
+    const second=p.matches(".grid2 > div:nth-child(2)");
+    lab.appendChild(make(text,name,second?"end":"start"));
+  });
+  // Toolbar labels
+  document.querySelectorAll("[data-help]").forEach(el=>{
+    const end=el.closest("[data-end]");
+    el.appendChild(make(el.dataset.help,el.firstChild.textContent.trim(),end?"end":""));
+  });
+  // Escape dismisses an open tooltip
+  document.addEventListener("keydown",e=>{
+    if(e.key!=="Escape")return;
+    document.querySelectorAll(".help").forEach(h=>{
+      h.classList.add("is-dismissed");
+      const off=()=>{h.classList.remove("is-dismissed");h.removeEventListener("mouseleave",off);h.removeEventListener("focusout",off)};
+      h.addEventListener("mouseleave",off);h.addEventListener("focusout",off);
+    });
+  });
+}
+
+/* ---------- Minimal click particles ---------- */
+function initParticles(){
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)");
+  document.addEventListener("click",e=>{
+    const btn=e.target.closest("button");
+    if(!btn||btn.disabled||reduce.matches||btn.classList.contains("help__icon"))return;
+    const r=btn.getBoundingClientRect();
+    const cx=e.clientX||r.left+r.width/2, cy=e.clientY||r.top+r.height/2;
+    const color=getComputedStyle(btn).backgroundColor==="rgb(255, 255, 255)"?"#2A9D8F":"#E9C46A";
+    for(let i=0;i<8;i++){
+      const a=Math.PI*2*i/8+Math.random()*.6, d=16+Math.random()*16, sz=3+Math.random()*2;
+      const dot=document.createElement("span");
+      dot.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;margin:${-sz/2}px 0 0 ${-sz/2}px;border-radius:50%;background:${i%2?color:"#E76F51"};pointer-events:none;z-index:9999`;
+      document.body.appendChild(dot);
+      dot.animate([{transform:"translate(0,0) scale(1)",opacity:.9},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px) scale(.2)`,opacity:0}],{duration:450+Math.random()*150,easing:"cubic-bezier(.2,.7,.3,1)"}).onfinish=()=>dot.remove();
+    }
+  });
+}
+function paintPalette(){
+  els.palette.innerHTML=PALETTES.editorial.map(c=>`<span class="swatch" style="background:${c}" title="${c}"></span>`).join("");
+}
+paintPalette();wire();initHelp();initParticles();els.data.value=SAMPLE;read();
+})();
+</script>
+</body>
+</html>
